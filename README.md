@@ -1,360 +1,264 @@
-# PROPUESTA EJECUTIVA - MIGRACIÓN A MICROSOFT AZURE
-## OROCOM - Transformación Digital con Azure AD y Azure Storage
+# RESUMEN TÉCNICO - INFORME DE SEGURIDAD HITSS SOLUTIONS S.A. DE C.V.
+
+## INFORMACIÓN GENERAL DEL INFORME
+
+**Empresa:** Hitss Solutions S.A. de C.V.  
+**Dominio Principal:** globalhitss.com  
+**Sector:** Servicios de Información  
+**Fecha de Generación:** 1 de julio de 2025  
+**Generado por:** Mario Rosas (mario.rosas+clarope@scitum.com.mx), Claro Peru  
+**Herramienta:** SecurityScorecard  
+**Total de Páginas:** 162  
+
+## PUNTUACIÓN GENERAL DE SEGURIDAD
+
+**PUNTUACIÓN ACTUAL: 45/100**  
+**CLASIFICACIÓN:** D (Baja)
+
+## ANÁLISIS DETALLADO POR FACTORES DE RIESGO
+
+### 1. SEGURIDAD DE APLICACIÓN WEB - 93/100 (ALTA)
+**Estado:** ✅ BUENO  
+**Incidencias:** 7  
+**Impacto en Score:** -0.3 a -0.1
+
+#### Problemas Identificados:
+- **Falta de Política de Seguridad de Contenido (CSP):** -0.3 puntos
+  - Riesgo de ataques XSS (Cross-Site Scripting)
+  - Posible ejecución de scripts maliciosos
+  - Falta de control sobre recursos cargados
+
+- **Implementación insegura de SRI (Subresource Integrity):** -0.2 puntos
+  - Recursos externos sin verificación de integridad
+  - Vulnerable a manipulación de scripts y estilos
+
+- **CSP con directivas demasiado permisivas:** -0.1 puntos
+  - Configuración amplia que reduce la efectividad
+  - Uso de valores como "http:" o "*"
+
+- **Falta de X-Content-Type-Options:** -0.3 puntos
+  - Vulnerable a MIME type sniffing
+  - Posible ejecución de scripts maliciosos
+
+- **Uso de directiva "unsafe":** -0.1 puntos
+  - Permite ejecución de código inline peligroso
+
+- **Falta de implementación HTTPS:** -0.3 puntos
+  - Comunicaciones no cifradas
+  - Vulnerable a interceptación de datos
+
+- **Falta de protección contra clickjacking:** -0.2 puntos
+  - Vulnerable a ataques de incrustación maliciosa
+
+### 2. CUBIT SCORE - 100/100 (EXCELENTE)
+**Estado:** ✅ EXCELENTE  
+**Incidencias:** 0  
+**Impacto en Score:** 0
+
+### 3. ESTADO DE DNS - 92/100 (BUENO)
+**Estado:** ✅ BUENO  
+**Incidencias:** 1  
+**Impacto en Score:** -0.1
+
+#### Problemas Identificados:
+- **Servidor DNS accesible públicamente:** -1.0 puntos
+  - Amplía la superficie de ataque
+  - Posible redirección maliciosa
+  - Necesita configuración de firewall y extensiones de seguridad
+
+### 4. SEGURIDAD DE PUNTOS DE CONEXIÓN - 80/100 (REGULAR)
+**Estado:** ⚠️ REGULAR  
+**Incidencias:** 1  
+**Impacto en Score:** -0.7 a -2.1
+
+#### Problemas Identificados:
+- **Servicio de proxy HTTP:** -0.7 puntos
+  - Riesgo de interceptación de datos
+  - Posible ataque de intermediario
+  - Exposición de credenciales
+
+- **Servicio IMAP expuesto:** -2.1 puntos
+  - Acceso no autorizado a correos
+  - Posible interceptación de datos
+  - Vulnerable a ataques de fuerza bruta
+
+- **Servicio POP3 expuesto:** -2.0 puntos
+  - Falta de cifrado inherente
+  - Autenticación débil
+  - Vulnerable a ataques de fuerza bruta
+
+### 5. HACKER CHATTER - 100/100 (EXCELENTE)
+**Estado:** ✅ EXCELENTE  
+**Incidencias:** 0  
+**Impacto en Score:** 0
+
+### 6. REPUTACIÓN DE IP - 100/100 (EXCELENTE)
+**Estado:** ✅ EXCELENTE  
+**Incidencias:** 0  
+**Impacto en Score:** 0
+
+### 7. FILTRACIÓN DE INFORMACIÓN - 100/100 (EXCELENTE)
+**Estado:** ✅ EXCELENTE  
+**Incidencias:** 0  
+**Impacto en Score:** 0
+
+### 8. SEGURIDAD DE RED - 43/100 (BAJA)
+**Estado:** ❌ CRÍTICO  
+**Incidencias:** 15  
+**Impacto en Score:** -0.7 a -2.1
+
+#### Problemas Identificados:
+- **SSH con algoritmos MAC débiles:** -1.9 puntos
+  - Algoritmos obsoletos como arcfour, 3des, blowfish
+  - Vulnerable a ataques criptográficos
+
+- **TLS con conjuntos de cifrado débiles:** -1.2 puntos
+  - Algoritmos obsoletos y vulnerables
+  - 35 servicios afectados
+
+- **Certificados sin control de revocación:** -1.0 puntos
+  - Falta de URLs CRL/OCSP
+  - 15 certificados afectados
+
+- **Certificados autofirmados:** -0.9 puntos
+  - No confiables para clientes
+  - Problemas de conectividad
+
+- **Certificados caducados:** -1.0 puntos
+  - Bloquean conexiones TLS
+  - Riesgo de denegación de servicio
+
+- **Vida útil de certificados excesiva:** -0.9 puntos
+  - No cumple con estándares CAB Forum
+  - Riesgo de compromiso a largo plazo
+
+- **Certificados con algoritmos de firma débiles:** -0.7 puntos
+  - Vulnerable a ataques criptográficos
+
+- **Servidor LDAP accesible:** -0.8 puntos
+  - Amplía superficie de ataque
+  - Necesita configuración TLS
+
+- **LDAP con enlaces anónimos:** -0.7 puntos
+  - Exposición de información de usuarios
+  - Acceso no autorizado al directorio
+
+### 9. CADENCIA DE APLICACIÓN DE REVISIONES - 41/100 (CRÍTICA)
+**Estado:** ❌ CRÍTICO  
+**Incidencias:** 14  
+**Impacto en Score:** -1.2 a -2.5
+
+#### Problemas Identificados:
+- **Vulnerabilidades de gravedad crítica:** -2.1 puntos
+  - CVE críticas sin parchar por más de 30 días
+  - Alto riesgo de explotación
+
+- **Vulnerabilidades de gravedad alta:** -1.9 a -2.1 puntos
+  - CVE altas sin parchar por más de 45 días
+  - Riesgo significativo de compromiso
+
+- **Vulnerabilidades de gravedad media:** -1.2 a -2.5 puntos
+  - CVE medias sin parchar por más de 90 días
+  - Riesgo moderado pero persistente
+
+- **Vulnerabilidades de gravedad baja:** -1.2 a -2.2 puntos
+  - CVE bajas sin parchar por más de 120 días
+  - Riesgo bajo pero acumulativo
+
+#### CVE Específicas Identificadas:
+- **Apache HTTP Server:** Múltiples versiones vulnerables (2.4.0-2.4.46)
+- **CVE-2020-13938:** Denegación de servicio en Windows
+- **CVE-2019-17567:** Vulnerabilidad en mod_proxy_wstunnel
+- **CVE-2022-28614:** Lectura de memoria no intencionada
+- **CVE-2024-24795:** HTTP Response splitting
+- **CVE-2019-10092:** Cross-site scripting limitado
+- **CVE-2020-1934:** Uso de memoria no inicializada en mod_proxy_ftp
+- **CVE-2018-1302/1301:** Crashes por requests maliciosos
+- **CVE-2019-10098:** Redirecciones inseguras en mod_rewrite
+
+### 10. INGENIERÍA SOCIAL - 100/100 (EXCELENTE)
+**Estado:** ✅ EXCELENTE  
+**Incidencias:** 0  
+**Impacto en Score:** 0
+
+## INFRAESTRUCTURA IDENTIFICADA
+
+### Dominios Principales:
+- globalhitss.com
+- hits.global
+- hitss.email
+- virtmdct.hitss.email
+- virtmtri.globalhitss.com
+
+### Servicios Expuestos:
+- **HTTP/HTTPS:** Puertos 80, 443, 8080, 8443
+- **Correo:** IMAP (143), POP3 (110), SMTP (25, 465, 587)
+- **LDAP:** Puerto 389
+- **SSH:** Puerto 22
+- **DNS:** Puerto 53
+- **Otros:** 20000, 7071, 9082
+
+### Rangos de IP Identificados:
+- 200.76.23.x
+- 189.254.217.x
+- 200.57.179.x
+- 201.116.236.x
+- 200.38.16.x
+
+## RECOMENDACIONES TÉCNICAS PRIORITARIAS
+
+### 1. URGENTE (Crítico - 0-7 días)
+- **Parchear vulnerabilidades críticas y altas** de Apache HTTP Server
+- **Renovar certificados caducados** y autofirmados
+- **Implementar HTTPS** en todos los servicios web
+- **Configurar política de seguridad de contenido (CSP)** estricta
+
+### 2. ALTA PRIORIDAD (1-2 semanas)
+- **Deshabilitar algoritmos criptográficos débiles** en SSH y TLS
+- **Configurar control de revocación** para certificados
+- **Implementar SRI** para recursos externos
+- **Configurar encabezados de seguridad** (X-Content-Type-Options, etc.)
+
+### 3. MEDIA PRIORIDAD (2-4 semanas)
+- **Restringir acceso a servicios LDAP** mediante VPN o firewall
+- **Deshabilitar enlaces anónimos** en LDAP
+- **Configurar firewall** para servicios DNS públicos
+- **Implementar monitoreo** de vulnerabilidades
+
+### 4. BAJA PRIORIDAD (1-2 meses)
+- **Auditoría de configuración** de todos los servicios
+- **Implementar monitoreo continuo** de seguridad
+- **Establecer proceso de parcheo** regular
+- **Capacitación del equipo** en mejores prácticas
+
+## IMPACTO EN EL NEGOCIO
+
+### Riesgos Identificados:
+- **Alto riesgo de compromiso** por vulnerabilidades críticas sin parchar
+- **Posible denegación de servicio** por certificados caducados
+- **Exposición de datos sensibles** por servicios no cifrados
+- **Acceso no autorizado** a sistemas internos
+- **Pérdida de confianza** de clientes y socios
+
+### Beneficios de la Implementación:
+- **Mejora significativa** en la puntuación de seguridad (objetivo: 80+)
+- **Reducción del riesgo** de incidentes de seguridad
+- **Cumplimiento** con estándares de la industria
+- **Protección** de la reputación corporativa
+- **Mejora** en la postura de seguridad general
+
+## CONCLUSIÓN
+
+Hitss Solutions S.A. de C.V. presenta una **postura de seguridad crítica** con una puntuación de 45/100. Los principales problemas se centran en:
+
+1. **Vulnerabilidades sin parchar** de alta y crítica gravedad
+2. **Configuración insegura** de servicios criptográficos
+3. **Certificados digitales** obsoletos y mal configurados
+4. **Servicios expuestos** innecesariamente a Internet
+5. **Falta de implementación** de mejores prácticas de seguridad web
+
+Se requiere **acción inmediata** para mitigar los riesgos críticos y establecer un programa de seguridad robusto que incluya parcheo regular, configuración segura de servicios y monitoreo continuo.
 
 ---
 
-## 📋 RESUMEN EJECUTIVO
-
-### 🎯 **OBJETIVO ESTRATÉGICO**
-Migrar la infraestructura de OROCOM a **Microsoft Azure** aprovechando **Azure Active Directory** para gestión de identidades y **Azure Storage** para almacenamiento escalable, optimizando costos y mejorando la seguridad empresarial.
-
-### 💡 **VALOR PROPUESTO**
-- **Ahorro anual**: $30,600 USD
-- **ROI esperado**: 280% en 2 años
-- **Integración nativa** con ecosistema Microsoft
-- **Seguridad empresarial** de nivel enterprise
-
----
-
-## 🏗️ ARQUITECTURA AZURE PROPUESTA
-
-### Diagrama de Arquitectura Microsoft Azure
-
-```mermaid
-graph TB
-    subgraph "SERVICIOS AZURE NECESARIOS"
-        subgraph "COMPUTE - $195/mes"
-            AD[🏢 Active Directory<br/>$120/mes]
-            SPRING[☕ Spring App<br/>$70/mes]
-            BASTION[🔑 Acceso Seguro<br/>$25/mes]
-        end
-        
-        subgraph "STORAGE - $990/mes"
-            STORAGE[📦 Almacenamiento<br/>27TB - $540/mes]
-            FILES[📁 Archivos Compartidos<br/>10TB - $300/mes]
-            SQL[🗄️ Base de Datos<br/>$150/mes]
-        end
-        
-        subgraph "SEGURIDAD - $170/mes"
-            AAD[👤 Gestión de Usuarios<br/>$0/mes]
-            SENTINEL[🔍 Seguridad Avanzada<br/>$100/mes]
-            BACKUP[💾 Backups Automáticos<br/>$50/mes]
-            MONITOR[📊 Monitoreo<br/>$20/mes]
-        end
-        
-        subgraph "REDES - $100/mes"
-            NETWORK[🌐 Conectividad<br/>$100/mes]
-        end
-    end
-    
-    subgraph "USUARIOS"
-        USERS[👥 50+ Usuarios<br/>Acceso Remoto]
-    end
-    
-    subgraph "DATOS A MIGRAR"
-        DATA[💾 27TB de Datos<br/>NAS Actual]
-    end
-    
-    %% Connections
-    USERS --> AAD
-    USERS --> AD
-    USERS --> SPRING
-    
-    DATA --> STORAGE
-    DATA --> FILES
-    
-    AD --> STORAGE
-    AD --> FILES
-    SPRING --> SQL
-    SPRING --> FILES
-    
-    SENTINEL --> AD
-    SENTINEL --> SPRING
-    MONITOR --> AD
-    MONITOR --> SPRING
-    MONITOR --> SQL
-    
-    BACKUP --> STORAGE
-    BACKUP --> FILES
-    BACKUP --> SQL
-    
-    NETWORK --> AD
-    NETWORK --> SPRING
-    NETWORK --> BASTION
-    
-    %% Styling
-    classDef compute fill:#2ecc71,stroke:#27ae60,color:#fff
-    classDef storage fill:#f39c12,stroke:#e67e22,color:#fff
-    classDef security fill:#9b59b6,stroke:#8e44ad,color:#fff
-    classDef network fill:#3498db,stroke:#2980b9,color:#fff
-    classDef users fill:#e74c3c,stroke:#c0392b,color:#fff
-    classDef data fill:#95a5a6,stroke:#7f8c8d,color:#fff
-    
-    class AD,SPRING,BASTION compute
-    class STORAGE,FILES,SQL storage
-    class AAD,SENTINEL,BACKUP,MONITOR security
-    class NETWORK network
-    class USERS users
-    class DATA data
-```
-
----
-
-## 💰 ANÁLISIS FINANCIERO
-
-## 💰 RESUMEN DE RECURSOS Y COSTOS
-
-### 📊 **Servicios Azure Necesarios**
-
-| Categoría | Servicio | Capacidad/Especificación | Costo Mensual |
-|-----------|----------|--------------------------|---------------|
-| **🏢 COMPUTE** | Active Directory | Gestión de usuarios | $120 |
-| | Spring Application | Sistema contable | $70 |
-| | Acceso Seguro | Bastion Host | $25 |
-| **📦 STORAGE** | Almacenamiento | 27TB (reemplaza NAS) | $540 |
-| | Archivos Compartidos | 10TB | $300 |
-| | Base de Datos | SQL Server | $150 |
-| **🔒 SEGURIDAD** | Gestión de Usuarios | Azure AD | $0 |
-| | Seguridad Avanzada | Azure Sentinel | $100 |
-| | Backups Automáticos | Azure Backup | $50 |
-| | Monitoreo | Azure Monitor | $20 |
-| **🌐 REDES** | Conectividad | Data Transfer | $100 |
-
-### **💰 COSTO TOTAL MENSUAL: $1,475 USD**
-### **💰 COSTO TOTAL ANUAL: $17,700 USD**
-
-### 📊 **Distribución de Costos por Categoría**
-
-```mermaid
-pie title Distribución de Costos Mensuales - Azure
-    "Storage (Almacenamiento)" : 990
-    "Compute (Procesamiento)" : 195
-    "Seguridad" : 170
-    "Redes" : 100
-    "Otros" : 20
-```
-
-### 📈 **Comparación: Actual vs Azure**
-
-| Concepto | Infraestructura Actual | Microsoft Azure | Ahorro Anual |
-|----------|------------------------|-----------------|--------------|
-| **Servidores** | $15,000 | $2,340 | $12,660 |
-| **Almacenamiento** | $8,000 | $11,880 | -$3,880 |
-| **Mantenimiento** | $12,000 | $0 | $12,000 |
-| **Energía** | $3,000 | $0 | $3,000 |
-| **Licencias** | $6,000 | $1,440 | $4,560 |
-| **Seguridad** | $2,000 | $2,040 | -$40 |
-| **TOTAL ANUAL** | **$46,000** | **$17,700** | **$28,300** |
-
-### 📈 **Análisis de Ahorro vs Infraestructura Actual**
-
-| Concepto | Actual | Azure | Ahorro Anual |
-|----------|--------|-------|--------------|
-| **Servidores** | $15,000 | $2,280 | $12,720 |
-| **Almacenamiento** | $8,000 | $10,080 | -$2,080 |
-| **Mantenimiento** | $12,000 | $0 | $12,000 |
-| **Energía** | $3,000 | $0 | $3,000 |
-| **Licencias Windows** | $6,000 | $1,440 | $4,560 |
-| **Seguridad** | $2,000 | $1,200 | $800 |
-| **TOTAL ANUAL** | **$46,000** | **$15,400** | **$30,600** |
-
-### 🎯 **ROI y Beneficios Financieros**
-- **Ahorro anual**: $30,600 USD
-- **ROI en 2 años**: 280%
-- **Recuperación de inversión**: 18 meses
-- **Valor presente neto (3 años)**: $45,000 USD
-
----
-
-## 🏆 VENTAJAS ESTRATÉGICAS DE AZURE
-
-### ✅ **Integración Nativa Microsoft**
-- **Azure AD**: Gestión centralizada de identidades
-- **Single Sign-On**: Acceso unificado a todas las aplicaciones
-- **Microsoft 365**: Integración perfecta con Office 365
-- **Windows Server**: Compatibilidad nativa
-
-### ✅ **Seguridad Empresarial**
-- **Azure Sentinel**: SIEM de nivel enterprise
-- **Azure Security Center**: Protección avanzada
-- **Compliance**: Cumplimiento con estándares internacionales
-- **Zero Trust**: Modelo de seguridad moderno
-
-### ✅ **Escalabilidad y Flexibilidad**
-- **Auto-scaling**: Escalado automático según demanda
-- **Pay-as-you-go**: Pago solo por lo que se usa
-- **Global Presence**: Disponibilidad en múltiples regiones
-- **Hybrid Cloud**: Integración con infraestructura local
-
----
-
-## 🚀 PLAN DE IMPLEMENTACIÓN
-
-### 📅 **Timeline: 10 Semanas**
-
-```mermaid
-gantt
-    title Plan de Migración a Microsoft Azure - OROCOM
-    dateFormat  YYYY-MM-DD
-    section Fase 1: Preparación
-    Configuración Azure Tenant     :done, tenant, 2025-08-01, 5d
-    Configuración Azure AD         :done, aad, 2025-08-06, 5d
-    Configuración Virtual Network  :done, vnet, 2025-08-11, 5d
-    
-    section Fase 2: Infraestructura Base
-    Azure AD Domain Services       :active, aadds, 2025-08-16, 7d
-    Azure Storage Configuration    :active, storage, 2025-08-23, 5d
-    Azure Files Setup              :active, files, 2025-08-28, 3d
-    
-    section Fase 3: Aplicaciones
-    Spring Application Migration   :spring, 2025-08-31, 7d
-    Azure SQL Database             :sql, 2025-09-07, 5d
-    Data Migration                 :migration, 2025-09-12, 7d
-    
-    section Fase 4: Seguridad
-    Azure Sentinel Setup           :sentinel, 2025-09-19, 5d
-    Security Policies              :security, 2025-09-24, 3d
-    Compliance Validation          :compliance, 2025-09-27, 3d
-    
-    section Fase 5: Corte
-    Final Testing                  :testing, 2025-09-30, 5d
-    User Training                  :training, 2025-10-05, 3d
-    Production Cutover             :cutover, 2025-10-08, 2d
-```
-
----
-
-## 🔒 BENEFICIOS DE SEGURIDAD
-
-### 🛡️ **Azure Active Directory**
-- **Gestión centralizada** de usuarios y dispositivos
-- **Multi-Factor Authentication** obligatorio
-- **Conditional Access** basado en políticas
-- **Single Sign-On** para todas las aplicaciones
-
-### 🔍 **Azure Sentinel**
-- **SIEM de nivel enterprise** con IA
-- **Detección de amenazas** en tiempo real
-- **Investigación automática** de incidentes
-- **Compliance reporting** automático
-
-### 📊 **Azure Security Center**
-- **Protección avanzada** contra amenazas
-- **Recomendaciones de seguridad** automáticas
-- **Vulnerability assessment** continuo
-- **Regulatory compliance** tracking
-
----
-
-## 📋 RIESGOS Y MITIGACIONES
-
-### ⚠️ **Riesgos Identificados**
-
-| Riesgo | Probabilidad | Impacto | Mitigación |
-|--------|--------------|---------|------------|
-| **Dependencia de Internet** | Baja | Alto | Conexión redundante + VPN |
-| **Costo de licencias** | Media | Medio | Azure Hybrid Benefit |
-| **Complejidad inicial** | Alta | Bajo | Capacitación + soporte |
-| **Resistencia al cambio** | Alta | Medio | Comunicación + training |
-
-### 🛡️ **Estrategias de Mitigación**
-- **Azure Hybrid Benefit**: Reducción de costos de licencias
-- **Azure Site Recovery**: Recuperación ante desastres
-- **Azure Backup**: Backups automáticos y redundantes
-- **Soporte técnico**: Microsoft Premier Support
-
----
-
-## 🎯 BENEFICIOS PARA LA ORGANIZACIÓN
-
-### 💼 **Beneficios Operacionales**
-- **Reducción de 70%** en tiempo de gestión de infraestructura
-- **Disponibilidad 99.9%** garantizada
-- **Acceso remoto** desde cualquier lugar
-- **Actualizaciones automáticas** de seguridad
-
-### 📈 **Beneficios Estratégicos**
-- **Transformación digital** completa
-- **Competitividad** mejorada
-- **Escalabilidad** para crecimiento futuro
-- **Innovación** con servicios cloud avanzados
-
-### 👥 **Beneficios para Usuarios**
-- **Experiencia mejorada** con Single Sign-On
-- **Acceso móvil** a aplicaciones
-- **Colaboración** mejorada con Microsoft 365
-- **Productividad** aumentada
-
----
-
-## 📊 COMPARACIÓN CON COMPETIDORES
-
-| Aspecto | Azure | AWS | GCP |
-|---------|-------|-----|-----|
-| **Costo Mensual** | $1,475 | $1,448 | $1,253 |
-| **Integración Windows** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ |
-| **Seguridad Enterprise** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
-| **Soporte Microsoft** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ |
-| **Compliance** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
-| **Facilidad de Migración** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ |
-
----
-
-## 🎯 RECOMENDACIÓN EJECUTIVA
-
-### 🏆 **Microsoft Azure es la Opción Óptima**
-
-**Razones principales:**
-1. **Integración nativa** con ecosistema Windows existente
-2. **Seguridad enterprise** de nivel superior
-3. **Azure AD** para gestión moderna de identidades
-4. **Soporte técnico** de Microsoft
-5. **Compliance** con estándares empresariales
-
-### 💰 **Inversión Requerida**
-- **Costo de migración**: $28,000 USD
-- **ROI esperado**: 280% en 2 años
-- **Ahorro anual**: $30,600 USD
-- **Recuperación**: 18 meses
-
----
-
-## 📞 PRÓXIMOS PASOS
-
-### 🎯 **Acciones Inmediatas (Semana 1)**
-1. **Aprobación ejecutiva** de la propuesta
-2. **Contacto con Microsoft** para evaluación técnica
-3. **Asignación de presupuesto** para migración
-4. **Formación del equipo** de proyecto
-
-### 📋 **Acciones a Corto Plazo (Semanas 2-4)**
-1. **Configuración de Azure Tenant**
-2. **Evaluación técnica** detallada
-3. **Planificación de migración** específica
-4. **Capacitación del equipo** técnico
-
-### 🚀 **Acciones a Mediano Plazo (Semanas 5-10)**
-1. **Implementación por fases**
-2. **Migración de datos** gradual
-3. **Testing y validación**
-4. **Corte de servicios** locales
-
----
-
-## 📄 APÉNDICES
-
-### 📊 **Documentación Técnica**
-- [Propuesta Técnica Detallada](PROPUESTA_MIGRACION_CLOUD_AWS.md)
-- [Análisis de Costos Comparativo](PROPUESTA_MIGRACION_CLOUD_GCP.md)
-- [Diagramas de Arquitectura](ARQUITECTURA_PROPUESTA_DETALLADA.md)
-
-### 📞 **Contactos**
-- **Microsoft Azure**: Partner técnico asignado
-- **Equipo IT OROCOM**: Soporte interno
-- **Consultor Externo**: Asesoría especializada
-
----
-
-*Propuesta ejecutiva generada el: 28 de Julio 2025*
-*Basada en inventario de servidores OROCOM*
-*Recomendación: Microsoft Azure con Azure AD* 
+*Este resumen técnico fue generado automáticamente basado en el análisis del informe de SecurityScorecard del 1 de julio de 2025.*
