@@ -1,21 +1,22 @@
+
 ## 📊 Estrategia de Backup 3-2-1
 
 ```mermaid
 flowchart TD
-    subgraph "1. COPIA DE PRODUCCIÓN (El dato original)"
+    subgraph "1. COPIA DE PRODUCCIÓN - El dato original"
         A[VM Hosts - VMware/Hyper-V]
     end
     
     A -->|Activo Backup for Business| B
     
-    subgraph "2. COPIA LOCAL (Medio 1: Discos HDD)"
+    subgraph "2. COPIA LOCAL - Medio 1 Discos HDD"
         B[Synology NAS - Servidor de Backup]
         B --> C[Configuración RAID 6<br/>8TB Utilizables]
     end
     
-    B -->|Cloud Sync (Cifrado)| D
+    B -->|Cloud Sync Cifrado| D
     
-    subgraph "3. COPIA FUERA DE SITIO (Medio 2: Cloud)"
+    subgraph "3. COPIA FUERA DE SITIO - Medio 2 Cloud"
         D[Microsoft OneDrive<br/>o Almacenamiento S3 Compatible]
         D --> E[CUMPLE BCP / DR]
     end
