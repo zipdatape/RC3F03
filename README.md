@@ -1,205 +1,429 @@
-# Diagrama de Flujo - Sistema de Auto-Sincronización de Usuarios
+# Diagrama de Flujo - Sistema de Auto-Sincronización de Usuarios (Mermaid)
 
 ## Flujo Principal del Sistema
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                           SISTEMA DE AUTO-SYNC                                 │
-└─────────────────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   GLPI Database │    │  Gesinfra API   │    │ Inventory API   │    │  App Licencias  │
-│                 │    │                 │    │                 │    │                 │
-│ • Equipos       │    │ • Estado        │    │ • Registro      │    │ • Licencias     │
-│ • Usuarios      │    │   Licenciamiento│    │   Masivo        │    │   Activas       │
-│ • Estados       │    │ • Tipo Licencia │    │ • Validación    │    │ • Asignaciones  │
-│ • Fechas        │    │ • Username      │    │ • Proyectos     │    │ • Proyectos     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │                       │
-         │ 1. Consulta           │                       │                       │
-         │    equipos nuevos     │                       │                       │
-         ▼                       │                       │                       │
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│ 1. CONSULTA GLPI                                                               │
-│ • Filtro: fecha_creacion > última_sync                                        │
-│ • Estados: "En uso", "Asignado"                                               │
-│ • Requisito: numero_usuario_alternativo IS NOT NULL                           │
-│ • Orden: fecha_creacion DESC                                                  │
-└─────────────────────────────────────────────────────────────────────────────────┘
-         │
-         │ 2. Para cada equipo encontrado
-         ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│ 2. EXTRACCIÓN DE DATOS                                                         │
-│ • codigo_sap: numero_usuario_alternativo                                      │
-│ • usuario: usuario (nombre completo)                                          │
-│ • equipo: modelo, ubicacion, tipo, estado                                     │
-│ • fechas: fecha_creacion, fecha_modificacion                                  │
-└─────────────────────────────────────────────────────────────────────────────────┘
-         │
-         │ 3. Consulta Gesinfra
-         ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│ 3. CONSULTA GESINFRA                                                           │
-│ • Endpoint: /api/users/search                                                 │
-│ • Método: POST                                                                │
-│ • Auth: Bearer Token                                                          │
-│ • Body: { "username": codigo_sap }                                            │
-└─────────────────────────────────────────────────────────────────────────────────┘
-         │
-         │ 4. Transformación de datos
-         ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│ 4. TRANSFORMACIÓN GESINFRA                                                     │
-│ • codigo_sap: data.exp                                                        │
-│ • usuario: data.nombre (nombre completo)                                      │
-│ • username: data.username (usuario corto)                                     │
-│ • estado: data.status                                                         │
-│ • tipo_licencia: data.detalles[].table_1[].Licencia                          │
-│ • correo: data.correo                                                         │
-│ • puesto: data.puesto                                                         │
-│ • ubicacion: data.ou                                                          │
-└─────────────────────────────────────────────────────────────────────────────────┘
-         │
-         │ 5. Registro en inventario
-         ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│ 5. REGISTRO EN INVENTARIO                                                      │
-│ • Endpoint: /api/v1/licenses/bulk                                             │
-│ • Método: POST                                                                │
-│ • Auth: Bearer Token                                                          │
-│ • Body: {                                                                     │
-│     "licenses": [{                                                            │
-│       "codigo_sap": "50800998",                                               │
-│       "nombre_licencia": "O365_M365F3",                                       │
-│       "usuario_asignado": "ambard",                                           │
-│       "tipo_licencia": "O365_M365F3",                                         │
-│       "estado": "activa",                                                     │
-│       "codigo_proyecto": "51238",                                             │
-│       "codigo_lote": "2",                                                     │
-│       "observaciones": "Auto-registro desde GLPI - Equipo: 83A1"             │
-│     }],                                                                       │
-│     "codigo_proyecto": "51238",                                               │
-│     "autoDebit": true                                                         │
-│   }                                                                           │
-└─────────────────────────────────────────────────────────────────────────────────┘
-         │
-         │ 6. Confirmación
-         ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│ 6. RESULTADO                                                                   │
-│ • Usuario registrado exitosamente                                             │
-│ • Licencia asignada automáticamente                                           │
-│ • Proyecto y lote configurados                                                │
-│ • Estado: activa                                                              │
-└─────────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A[🚀 Inicio Auto-Sync] --> B[📊 Consulta GLPI Database]
+    B --> C{¿Equipos nuevos encontrados?}
+    C -->|No| D[✅ Sincronización completada<br/>Sin cambios]
+    C -->|Sí| E[📋 Procesar cada equipo]
+    
+    E --> F[🔍 Extraer datos del equipo]
+    F --> G{¿Datos válidos?}
+    G -->|No| H[⚠️ Equipo omitido<br/>Datos incompletos]
+    G -->|Sí| I[🌐 Consultar Gesinfra API]
+    
+    I --> J{¿Usuario encontrado en Gesinfra?}
+    J -->|No| K[⚠️ Usuario no encontrado<br/>en Gesinfra]
+    J -->|Sí| L[🔄 Transformar datos Gesinfra]
+    
+    L --> M[📦 Preparar payload para inventario]
+    M --> N[🚀 Registrar en Inventory API]
+    N --> O{¿Registro exitoso?}
+    O -->|No| P[❌ Error en registro<br/>de inventario]
+    O -->|Sí| Q[✅ Usuario registrado<br/>exitosamente]
+    
+    H --> R[📊 Generar reporte final]
+    K --> R
+    P --> R
+    Q --> R
+    R --> S[📧 Enviar notificación]
+    S --> T[🏁 Fin del proceso]
+    D --> T
+    
+    style A fill:#e1f5fe
+    style T fill:#e8f5e8
+    style Q fill:#e8f5e8
+    style H fill:#fff3e0
+    style K fill:#fff3e0
+    style P fill:#ffebee
+    style D fill:#f3e5f5
 ```
 
 ## Dependencias Críticas del GLPI
 
-### **Campos Obligatorios en GLPI**
-
-| Campo | Descripción | Impacto si falta |
-|-------|-------------|------------------|
-| `numero_usuario_alternativo` | Código SAP del usuario | **CRÍTICO** - No se procesa el equipo |
-| `estado` | Estado del equipo | **CRÍTICO** - Solo procesa "En uso" y "Asignado" |
-| `fecha_creacion` | Fecha de registro | **CRÍTICO** - No se identifica como nuevo |
-| `usuario` | Nombre del usuario | **IMPORTANTE** - Se usa para identificación |
-| `modelo` | Modelo del equipo | **IMPORTANTE** - Se incluye en observaciones |
-
-### **Estados Válidos en GLPI**
-
-- ✅ **"En uso"** - Equipo activo con usuario asignado
-- ✅ **"Asignado"** - Equipo asignado a usuario
-- ❌ **"En almacén"** - No se procesa
-- ❌ **"Fuera de servicio"** - No se procesa
-- ❌ **"Pendiente"** - No se procesa
-
-### **Filtros de Búsqueda**
-
-```sql
-SELECT * FROM equipos 
-WHERE fecha_creacion > '2025-01-01 00:00:00'
-  AND estado IN ('En uso', 'Asignado')
-  AND numero_usuario_alternativo IS NOT NULL
-  AND numero_usuario_alternativo != ''
-ORDER BY fecha_creacion DESC
-LIMIT 100
+```mermaid
+graph TD
+    A[📋 Equipo en GLPI] --> B{¿numero_usuario_alternativo existe?}
+    B -->|No| C[❌ CRÍTICO<br/>Equipo no se procesa]
+    B -->|Sí| D{¿estado válido?}
+    
+    D -->|No| E[❌ CRÍTICO<br/>Estado incorrecto]
+    D -->|Sí| F{¿fecha_creacion válida?}
+    
+    F -->|No| G[❌ CRÍTICO<br/>Fecha incorrecta]
+    F -->|Sí| H{¿usuario tiene nombre?}
+    
+    H -->|No| I[⚠️ IMPORTANTE<br/>Usuario sin nombre]
+    H -->|Sí| J{¿modelo especificado?}
+    
+    J -->|No| K[⚠️ IMPORTANTE<br/>Modelo faltante]
+    J -->|Sí| L[✅ Equipo válido<br/>Listo para procesar]
+    
+    C --> M[📊 Reporte de errores]
+    E --> M
+    G --> M
+    I --> M
+    K --> M
+    L --> N[🔄 Continuar con Gesinfra]
+    
+    style A fill:#e3f2fd
+    style L fill:#e8f5e8
+    style C fill:#ffebee
+    style E fill:#ffebee
+    style G fill:#ffebee
+    style I fill:#fff3e0
+    style K fill:#fff3e0
+    style M fill:#fce4ec
+    style N fill:#e1f5fe
 ```
 
-## Flujo de Errores
+## Estados Válidos en GLPI
 
+```mermaid
+graph LR
+    A[📊 Estados en GLPI] --> B[✅ En uso]
+    A --> C[✅ Asignado]
+    A --> D[❌ En almacén]
+    A --> E[❌ Fuera de servicio]
+    A --> F[❌ Pendiente]
+    
+    B --> G[🔄 Se procesa]
+    C --> G
+    D --> H[⏭️ Se omite]
+    E --> H
+    F --> H
+    
+    style B fill:#e8f5e8
+    style C fill:#e8f5e8
+    style D fill:#ffebee
+    style E fill:#ffebee
+    style F fill:#ffebee
+    style G fill:#e1f5fe
+    style H fill:#f5f5f5
 ```
-┌─────────────────┐
-│ Error en GLPI   │
-└─────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│ ERRORES COMUNES                                                                │
-│ • numero_usuario_alternativo vacío o NULL                                     │
-│ • Estado incorrecto (no es "En uso" o "Asignado")                            │
-│ • fecha_creacion incorrecta o faltante                                        │
-│ • Usuario sin nombre                                                          │
-└─────────────────────────────────────────────────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│ CONSECUENCIAS                                                                  │
-│ • Equipo no se procesa                                                        │
-│ • Usuario no se registra en inventario                                        │
-│ • Licencia no se asigna                                                       │
-│ • Reporte de sincronización incompleto                                        │
-└─────────────────────────────────────────────────────────────────────────────────┘
+
+## Flujo de APIs
+
+```mermaid
+sequenceDiagram
+    participant GLPI as 📊 GLPI Database
+    participant API as 🔄 Auto-Sync API
+    participant Gesinfra as 🌐 Gesinfra API
+    participant Inventory as 📦 Inventory API
+    participant App as 💾 App Licencias
+    
+    API->>GLPI: 1. Consulta equipos nuevos
+    GLPI-->>API: 2. Lista de equipos
+    
+    loop Para cada equipo
+        API->>API: 3. Validar datos GLPI
+        API->>Gesinfra: 4. POST /api/users/search
+        Note over API,Gesinfra: Body: {"username": "50800998"}
+        Gesinfra-->>API: 5. Datos de licenciamiento
+        
+        API->>API: 6. Transformar datos
+        API->>Inventory: 7. POST /api/v1/licenses/bulk
+        Note over API,Inventory: Body: {"licenses": [...], "codigo_proyecto": "51238", "autoDebit": true}
+        Inventory-->>API: 8. Confirmación de registro
+        
+        API->>App: 9. Actualizar base de datos
+    end
+    
+    API->>API: 10. Generar reporte final
 ```
 
-## Validaciones del Sistema
+## Estructura de Datos
 
-### **Pre-validación GLPI**
-- [ ] `numero_usuario_alternativo` existe y no está vacío
-- [ ] `estado` es "En uso" o "Asignado"
-- [ ] `fecha_creacion` es válida
-- [ ] `usuario` tiene nombre
+```mermaid
+graph TD
+    A[📋 Datos GLPI] --> B[🔍 Extracción]
+    B --> C[📊 Datos Base]
+    
+    C --> D[codigo_sap: numero_usuario_alternativo]
+    C --> E[usuario: nombre completo]
+    C --> F[equipo: modelo, ubicacion, tipo]
+    C --> G[fechas: creacion, modificacion]
+    
+    H[🌐 Consulta Gesinfra] --> I[🔄 Transformación]
+    I --> J[📦 Datos Gesinfra]
+    
+    J --> K[username: usuario corto]
+    J --> L[tipo_licencia: O365_M365F3]
+    J --> M[estado: activo]
+    J --> N[correo: email del usuario]
+    
+    C --> O[📦 Payload Final]
+    J --> O
+    
+    O --> P[codigo_sap: 50800998]
+    O --> Q[nombre_licencia: O365_M365F3]
+    O --> R[usuario_asignado: ambard]
+    O --> S[tipo_licencia: O365_M365F3]
+    O --> T[estado: activa]
+    O --> U[codigo_proyecto: 51238]
+    O --> V[codigo_lote: 2]
+    O --> W[observaciones: Auto-registro desde GLPI]
+    
+    style A fill:#e3f2fd
+    style H fill:#e8f5e8
+    style O fill:#fff3e0
+    style P fill:#f3e5f5
+    style Q fill:#f3e5f5
+    style R fill:#f3e5f5
+    style S fill:#f3e5f5
+    style T fill:#f3e5f5
+    style U fill:#f3e5f5
+    style V fill:#f3e5f5
+    style W fill:#f3e5f5
+```
 
-### **Validación Gesinfra**
-- [ ] Código SAP existe en Gesinfra
-- [ ] Usuario tiene estado de licenciamiento
-- [ ] Tipo de licencia identificado
-- [ ] Username disponible
+## Manejo de Errores
 
-### **Validación Inventario**
-- [ ] Código de proyecto válido
-- [ ] Código de lote válido
-- [ ] Token de autenticación válido
-- [ ] Estructura de datos correcta
+```mermaid
+flowchart TD
+    A[🚨 Error Detectado] --> B{¿Tipo de error?}
+    
+    B -->|GLPI| C[📊 Error en GLPI]
+    B -->|Gesinfra| D[🌐 Error en Gesinfra]
+    B -->|Inventario| E[📦 Error en Inventario]
+    
+    C --> F[❌ numero_usuario_alternativo vacío]
+    C --> G[❌ Estado incorrecto]
+    C --> H[❌ Fecha incorrecta]
+    C --> I[❌ Usuario sin nombre]
+    
+    D --> J[❌ Código SAP no encontrado]
+    D --> K[❌ Token inválido]
+    D --> L[❌ Timeout de conexión]
+    D --> M[❌ Respuesta malformada]
+    
+    E --> N[❌ Código proyecto inválido]
+    E --> O[❌ Código lote inválido]
+    E --> P[❌ Token inválido]
+    E --> Q[❌ Estructura incorrecta]
+    
+    F --> R[📝 Log de error]
+    G --> R
+    H --> R
+    I --> R
+    J --> R
+    K --> R
+    L --> R
+    M --> R
+    N --> R
+    O --> R
+    P --> R
+    Q --> R
+    
+    R --> S[⚠️ Continuar con siguiente equipo]
+    S --> T[📊 Reporte final con errores]
+    
+    style A fill:#ffebee
+    style C fill:#ffebee
+    style D fill:#ffebee
+    style E fill:#ffebee
+    style F fill:#ffcdd2
+    style G fill:#ffcdd2
+    style H fill:#ffcdd2
+    style I fill:#ffcdd2
+    style J fill:#ffcdd2
+    style K fill:#ffcdd2
+    style L fill:#ffcdd2
+    style M fill:#ffcdd2
+    style N fill:#ffcdd2
+    style O fill:#ffcdd2
+    style P fill:#ffcdd2
+    style Q fill:#ffcdd2
+    style R fill:#fff3e0
+    style S fill:#e8f5e8
+    style T fill:#e1f5fe
+```
 
 ## Métricas de Calidad
 
-### **Indicadores de Éxito**
-- **Tasa de procesamiento**: > 95% de equipos válidos
-- **Tasa de registro**: > 90% de usuarios registrados
-- **Tiempo de sincronización**: < 5 minutos por 100 equipos
-- **Errores de validación**: < 5% por sincronización
+```mermaid
+pie title Distribución de Errores en Auto-Sync
+    "Código SAP faltante" : 40
+    "Estado incorrecto" : 25
+    "Fecha incorrecta" : 20
+    "Usuario sin nombre" : 15
+```
 
-### **Alertas del Sistema**
-- ⚠️ **Alerta**: Equipos sin `numero_usuario_alternativo`
-- ⚠️ **Alerta**: Estados incorrectos en equipos
-- ⚠️ **Alerta**: Usuarios no encontrados en Gesinfra
-- ⚠️ **Alerta**: Fallos en registro de inventario
+## Arquitectura del Sistema
 
-## Mantenimiento Preventivo
+```mermaid
+graph TB
+    subgraph "🖥️ Frontend"
+        A[📱 User Auto-Sync Component]
+        B[⚙️ Settings Component]
+    end
+    
+    subgraph "🔄 API Layer"
+        C[🔄 /api/users/auto-sync]
+        D[🌐 /api/gesinfra/search]
+        E[⚙️ /api/api-validation]
+    end
+    
+    subgraph "💾 Database Layer"
+        F[📊 GLPI Database]
+        G[💾 App Database]
+        H[⚙️ Configuration DB]
+    end
+    
+    subgraph "🌐 External APIs"
+        I[🌐 Gesinfra API]
+        J[📦 Inventory API]
+    end
+    
+    A --> C
+    B --> E
+    C --> F
+    C --> I
+    C --> J
+    D --> I
+    E --> I
+    C --> G
+    C --> H
+    
+    style A fill:#e3f2fd
+    style B fill:#e3f2fd
+    style C fill:#e8f5e8
+    style D fill:#e8f5e8
+    style E fill:#e8f5e8
+    style F fill:#fff3e0
+    style G fill:#fff3e0
+    style H fill:#fff3e0
+    style I fill:#f3e5f5
+    style J fill:#f3e5f5
+```
 
-### **Tareas Diarias**
-- [ ] Verificar sincronización automática
-- [ ] Revisar logs de errores
-- [ ] Validar nuevos equipos en GLPI
+## Proceso de Validación
 
-### **Tareas Semanales**
-- [ ] Auditoría de datos en GLPI
-- [ ] Verificación de estados de equipos
-- [ ] Revisión de códigos SAP
+```mermaid
+flowchart TD
+    A[📋 Equipo recibido] --> B[🔍 Validar campos obligatorios]
+    B --> C{¿numero_usuario_alternativo?}
+    C -->|No| D[❌ Error: Código SAP faltante]
+    C -->|Sí| E{¿estado válido?}
+    
+    E -->|No| F[❌ Error: Estado incorrecto]
+    E -->|Sí| G{¿fecha_creacion?}
+    
+    G -->|No| H[❌ Error: Fecha faltante]
+    G -->|Sí| I{¿usuario?}
+    
+    I -->|No| J[⚠️ Advertencia: Usuario sin nombre]
+    I -->|Sí| K{¿modelo?}
+    
+    K -->|No| L[⚠️ Advertencia: Modelo faltante]
+    K -->|Sí| M[✅ Validación exitosa]
+    
+    D --> N[📝 Log de error]
+    F --> N
+    H --> N
+    J --> O[📝 Log de advertencia]
+    L --> O
+    M --> P[🔄 Continuar procesamiento]
+    
+    N --> Q[⏭️ Omitir equipo]
+    O --> P
+    P --> R[🌐 Consultar Gesinfra]
+    
+    style A fill:#e3f2fd
+    style M fill:#e8f5e8
+    style D fill:#ffebee
+    style F fill:#ffebee
+    style H fill:#ffebee
+    style J fill:#fff3e0
+    style L fill:#fff3e0
+    style N fill:#fce4ec
+    style O fill:#fff8e1
+    style P fill:#e1f5fe
+    style Q fill:#f5f5f5
+    style R fill:#e8f5e8
+```
 
-### **Tareas Mensuales**
-- [ ] Reporte de calidad de datos
-- [ ] Análisis de tendencias de errores
-- [ ] Optimización de consultas
+## Flujo de Configuración
+
+```mermaid
+flowchart TD
+    A[⚙️ Configuración del Sistema] --> B[🔧 Variables de Entorno]
+    B --> C[🌐 Gesinfra API]
+    B --> D[📦 Inventory API]
+    B --> E[📊 GLPI Database]
+    
+    C --> F[URL: https://gesinfra.example.com]
+    C --> G[Token: Bearer token]
+    C --> H[Timeout: 30 segundos]
+    
+    D --> I[URL: https://inventory.example.com]
+    D --> J[Token: Bearer token]
+    D --> K[Endpoint: /api/v1/licenses/bulk]
+    
+    E --> L[Host: localhost]
+    E --> M[Port: 3306]
+    E --> N[Database: glpi]
+    E --> O[User: glpi_user]
+    E --> P[Password: glpi_password]
+    
+    F --> Q[✅ Configuración completa]
+    G --> Q
+    H --> Q
+    I --> Q
+    J --> Q
+    K --> Q
+    L --> Q
+    M --> Q
+    N --> Q
+    O --> Q
+    P --> Q
+    
+    style A fill:#e3f2fd
+    style C fill:#e8f5e8
+    style D fill:#e8f5e8
+    style E fill:#e8f5e8
+    style Q fill:#e8f5e8
+```
+
+## Resumen de Dependencias
+
+```mermaid
+mindmap
+  root((Sistema Auto-Sync))
+    GLPI Database
+      numero_usuario_alternativo
+        CRÍTICO
+        Código SAP
+      estado
+        CRÍTICO
+        En uso o Asignado
+      fecha_creacion
+        CRÍTICO
+        Fecha válida
+      usuario
+        IMPORTANTE
+        Nombre completo
+      modelo
+        IMPORTANTE
+        Modelo del equipo
+    Gesinfra API
+      Código SAP válido
+      Token de autenticación
+      Username disponible
+      Tipo de licencia
+    Inventory API
+      Código proyecto válido
+      Código lote válido
+      Token de autenticación
+      Estructura correcta
+    App Licencias
+      Base de datos
+      Tabla app_licencias
+      Campos requeridos
+```
+
+---
+
+**Nota**: Estos diagramas Mermaid pueden ser renderizados en cualquier editor que soporte Mermaid (como GitHub, GitLab, o editores online) para visualizar el flujo completo del sistema de auto-sincronización.
