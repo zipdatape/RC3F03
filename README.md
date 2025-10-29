@@ -132,4 +132,85 @@ flowchart LR
   E --> G[Mostrar errores al usuario]
 ```
 
+```mermaid
+%% Sincronizaciones: Licencias, Laptops y Proyectos (resumen no técnico)
+flowchart LR
+  subgraph Fuentes
+    L[Licencias (PostgreSQL)\nUsuarios y estados]
+    EQ[Equipos (MySQL)\nLaptops por usuario]
+    PR[Proyectos (PostgreSQL)\nTabla proyectos]
+    XL[Excel (PostgreSQL)\nRecursos importados]
+    CFG[Configuración (MySQL)\nsync_configuration]
+    LT[Tablas de tipos y precios\nlicense_types / equipment_types]
+  end
+
+  S[Sistema de Integración] --> L
+  S --> EQ
+  S --> PR
+  S --> XL
+  S --> CFG
+  S --> LT
+
+  L & EQ & PR & XL & CFG & LT --> V[Validar por código SAP\nReglas simples de negocio]
+
+  V --> MAP[Mapear estado/tipo\nCalcular precio]
+  MAP --> INV{¿Existe en Inventario?}
+  INV -- Sí --> UPD[Actualizar datos]
+  INV -- No --> INS[Crear nuevo]
+
+  subgraph Destino
+    I1[Inventario - Licencias]
+    I2[Inventario - Laptops]
+  end
+
+  UPD --> I1 & I2
+  INS --> I1 & I2
+```
+
+```mermaid
+%% Secuencia con detalle de validaciones y precios (ejemplos)
+sequenceDiagram
+  participant U as Usuario (inicia)
+  participant S as Sistema
+  participant L as Licencias (PG)
+  participant EQ as Equipos (MySQL)
+  participant P as Proyectos/Excel (PG)
+  participant T as Tipos/Precios
+  participant I as Inventario
+
+  U->>S: Sincronizar Licencias y Laptops
+  Note over S: SAP del usuario = 12345
+
+  S->>L: Obtener estado y tipo de licencia
+  S->>EQ: Obtener laptop del usuario
+  S->>P: Buscar proyecto(s) por SAP
+  S->>T: Leer reglas de precio/Tipo
+
+  S->>S: Validar SAP y completar faltantes
+  S->>S: Mapear estado (ej.: Activo -> activa)
+  S->>S: Calcular precio (ej.: tipo_licencia A = 25 USD)
+
+  alt Registro ya existe en Inventario
+    S->>I: Actualizar estado, tipo, costo, proyecto
+  else No existe
+    S->>I: Crear licencia y/o laptop
+  end
+
+  I-->>S: Resumen (nuevos/actualizados/errores)
+  S-->>U: Mostrar resultados
+```
+
+```mermaid
+%% Precios y reglas en términos simples
+flowchart TB
+  A[Entrada: tipo y características] --> B{¿Es licencia?}
+  B -- Sí --> L1[Buscar en license_types\nPrecio por tipo]
+  B -- No --> C{¿Es laptop?}
+  C -- Sí --> E1[Aplicar equipment_types\nReglas por procesador/memoria]
+  C -- No --> X[Otros casos]
+  L1 --> P$[Precio final]
+  E1 --> P$
+  X --> P$
+```
+
 
