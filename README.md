@@ -244,7 +244,7 @@ flowchart LR
   - Usuario sin `exp`: usa `username` (licencias) o `usuario`/`numero_usuario_alternativo` (equipos/monitores).
   - Certificados autofirmados: `rejectUnauthorized: false` en llamadas HTTPS hacia Inventario.
 
-# Sistema de Autenticación RADIUS
+## Sistema de Autenticación RADIUS
 
 Un sistema completo de autenticación con integración RADIUS, desarrollado con Next.js 14, TypeScript y MySQL.
 
