@@ -4,48 +4,56 @@
 
 ```mermaid
 flowchart LR
-  subgraph Auth-System [Auth System (Next.js API)]
-    A1[Integrations API]
-    A2[/api/sync/licenses]
-    A3[/api/sync/equipment]
-    A4[/api/sync/projects]
-    A5[/api/sync/upload-excel]
-    A6[/api/sync/upload-monitors]
-    A7[/api/sync/config]
+  subgraph App [Auth System (Next.js API)]
+    A1["Integrations API"]
+    A2["/api/sync/licenses"]
+    A3["/api/sync/equipment"]
+    A4["/api/sync/projects"]
+    A5["/api/sync/upload-excel"]
+    A6["/api/sync/upload-monitors"]
+    A7["/api/sync/config"]
   end
 
-  subgraph DB-Interna [DB Interna (MySQL: auth_system)]
-    D1[integrations]
-    D2[sync_configuration]
-    D3[license_types]
-    D4[equipment_types]
+  subgraph DB_Interna [DB Interna (MySQL: auth_system)]
+    D1["integrations"]
+    D2["sync_configuration"]
+    D3["license_types"]
+    D4["equipment_types"]
   end
 
   subgraph Externas
-    E1[(DB Licencias - PostgreSQL)]
-    E2[(DB Proyectos Hitss - PostgreSQL)]
-    E3[(DB Datos Excel - PostgreSQL)]
-    E4[(DB Equipos - MySQL)]
-    E5[[Inventario API]]
+    E1["DB Licencias (PostgreSQL)"]
+    E2["DB Proyectos Hitss (PostgreSQL)"]
+    E3["DB Datos Excel (PostgreSQL)"]
+    E4["DB Equipos (MySQL)"]
+    E5["Inventario API (HTTPS Bearer)"]
   end
 
-  A1 <-- CRUD/Tests --> D1
-  A7 <-- GET/PUT --> D2
+  A1 --> D1
+  D1 --> A1
+  A7 --> D2
+  D2 --> A7
+
   A2 --> E1
   A2 --> E2
   A2 --> E3
   A2 --> D3
   A2 --> E5
+
   A3 --> E1
   A3 --> E4
   A3 --> D4
   A3 --> E5
+
   A4 --> E2
   A4 --> E3
   A4 --> E5
+
   A5 --> E3
+
   A6 --> E4
-  A6 --> E2 & E3
+  A6 --> E2
+  A6 --> E3
   A6 --> E5
 ```
 
