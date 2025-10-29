@@ -4,29 +4,29 @@
 
 ```mermaid
 flowchart LR
-  subgraph App [Auth System (Next.js API)]
-    A1["Integrations API"]
-    A2["/api/sync/licenses"]
-    A3["/api/sync/equipment"]
-    A4["/api/sync/projects"]
-    A5["/api/sync/upload-excel"]
-    A6["/api/sync/upload-monitors"]
-    A7["/api/sync/config"]
+  subgraph App [Auth System NextJS API]
+    A1[Integrations API]
+    A2[/api/sync/licenses]
+    A3[/api/sync/equipment]
+    A4[/api/sync/projects]
+    A5[/api/sync/upload-excel]
+    A6[/api/sync/upload-monitors]
+    A7[/api/sync/config]
   end
 
-  subgraph DB_Interna [DB Interna (MySQL: auth_system)]
-    D1["integrations"]
-    D2["sync_configuration"]
-    D3["license_types"]
-    D4["equipment_types"]
+  subgraph DB_Interna [DB Interna MySQL auth_system]
+    D1[integrations]
+    D2[sync_configuration]
+    D3[license_types]
+    D4[equipment_types]
   end
 
   subgraph Externas
-    E1["DB Licencias (PostgreSQL)"]
-    E2["DB Proyectos Hitss (PostgreSQL)"]
-    E3["DB Datos Excel (PostgreSQL)"]
-    E4["DB Equipos (MySQL)"]
-    E5["Inventario API (HTTPS Bearer)"]
+    E1[DB Licencias PG]
+    E2[DB Proyectos Hitss PG]
+    E3[DB Datos Excel PG]
+    E4[DB Equipos MySQL]
+    E5[Inventario API HTTPS Bearer]
   end
 
   A1 --> D1
