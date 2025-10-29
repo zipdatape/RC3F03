@@ -6,12 +6,12 @@
 flowchart LR
   subgraph App [Auth System NextJS API]
     A1[Integrations API]
-    A2[/api/sync/licenses]
-    A3[/api/sync/equipment]
-    A4[/api/sync/projects]
-    A5[/api/sync/upload-excel]
-    A6[/api/sync/upload-monitors]
-    A7[/api/sync/config]
+    A2[/api/sync/licenses/]
+    A3[/api/sync/equipment/]
+    A4[/api/sync/projects/]
+    A5[/api/sync/upload-excel/]
+    A6[/api/sync/upload-monitors/]
+    A7[/api/sync/config/]
   end
 
   subgraph DB_Interna [DB Interna MySQL auth_system]
