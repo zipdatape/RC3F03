@@ -1,125 +1,45 @@
-# Topologías de Red
+graph TD
+    %% Inicio
+    A[Inicio de Sesión] -->|Credenciales Únicas| B{Rol de Usuario}
 
-## Topología 1: Infraestructura con Equipos del Proveedor
+    ---
+    %% Flujo Agente (Ciclo de Tipificación)
+    B -->|Agente| C[Panel de Búsqueda]
+    C --> D{Ingresar ID/DNI}
+    D -->|Buscar| E[Consultar Backend]
 
-```mermaid
-graph TB
-    subgraph "Empresa"
-        SwitchTP["Switch TP-Link<br/>(Empresa)"]
-        Equipo1["Equipo 1"]
-        Equipo2["Equipo 2"]
-        Equipo3["Equipo 3"]
-    end
+    %% Ramificación de Consulta
+    E -->|Cliente No Encontrado| F[Alerta Visual]
+    E -->|Cliente Encontrado| G[Mostrar Datos Cliente + Historial]
+
+    %% Tipificación
+    G --> H[Formulario de Tipificación]
+    H --> I[Seleccionar Categoría/Subcategoría]
+    I --> J[Agregar Comentarios]
+    J --> K[Guardar Tipificación]
+    K -->|Insertar en BD| L[Confirmación Éxito]
     
-    subgraph "Proveedor"
-        RouterProv["Router<br/>(Proveedor)"]
-        SwitchAruba["Switch Aruba<br/>(Proveedor)"]
-        AP1["AP 1<br/>(Proveedor)"]
-        AP2["AP 2<br/>(Proveedor)"]
-        AP3["AP 3<br/>(Proveedor)"]
-    end
+    L --> C 
+    %% Retorno al Panel de Búsqueda para el siguiente ciclo
     
-    Internet["Internet"]
-    
-    Equipo1 --> SwitchTP
-    Equipo2 --> SwitchTP
-    Equipo3 --> SwitchTP
-    SwitchTP --> RouterProv
-    RouterProv --> SwitchAruba
-    SwitchAruba --> AP1
-    SwitchAruba --> AP2
-    SwitchAruba --> AP3
-    RouterProv --> Internet
-    
-    style SwitchTP fill:#90EE90
-    style RouterProv fill:#FFB6C1
-    style SwitchAruba fill:#FFB6C1
-    style AP1 fill:#FFB6C1
-    style AP2 fill:#FFB6C1
-    style AP3 fill:#FFB6C1
-    style Equipo1 fill:#87CEEB
-    style Equipo2 fill:#87CEEB
-    style Equipo3 fill:#87CEEB
-```
+    ---
+    %% Flujo Administrador (Métricas y Gestión)
+    B -->|Administrador| M[Dashboard de Métricas]
 
-**Leyenda:**
-- 🟢 Verde: Equipos de la Empresa
-- 🔴 Rosa: Equipos del Proveedor
-- 🔵 Azul: Equipos de Usuario
+    %% Opciones de Dashboard
+    M --> N[Ver Tabla de Tipificaciones]
+    M --> O[Ver Auditoría de Consultas]
+    M --> R[Gestión de Base de Datos]
 
-**Descripción:**
-- La empresa solo posee un **Switch TP-Link** que conecta los equipos internos
-- El **Router** y el **Switch Aruba** pertenecen al proveedor
-- Los **APs (Access Points)** también son del proveedor y están conectados al Switch Aruba
-- El Router del proveedor proporciona la conexión a Internet
+    %% Sub-flujo de Reportes
+    N --> P[Filtrar por Fecha/Agente]
+    P --> Q[Descargar Reporte (CSV/Excel)]
 
----
+    %% Sub-flujo de Gestión de BD
+    R --> S{Subir Archivo CSV/Excel}
+    S -->|Validar Formato| T[Procesar Carga Masiva]
+    T -->|Insertar/Actualizar| U[Actualizar BD Clientes]
 
-## Topología 2: Infraestructura con Router Propio de la Empresa
-
-```mermaid
-graph TB
-    subgraph "Empresa"
-        RouterEmp["Router Propio<br/>(Empresa)"]
-        SwitchTP["Switch TP-Link<br/>(Empresa)"]
-        Equipo1["Equipo 1"]
-        Equipo2["Equipo 2"]
-        Equipo3["Equipo 3"]
-    end
-    
-    subgraph "Proveedor"
-        RouterProv["Router Proveedor<br/>(Proveedor)"]
-        SwitchAruba["Switch Aruba<br/>(Proveedor)"]
-        AP1["AP 1<br/>(Proveedor)"]
-        AP2["AP 2<br/>(Proveedor)"]
-        AP3["AP 3<br/>(Proveedor)"]
-    end
-    
-    Internet["Internet"]
-    
-    Equipo1 --> SwitchTP
-    Equipo2 --> SwitchTP
-    Equipo3 --> SwitchTP
-    SwitchTP --> RouterEmp
-    RouterEmp --> RouterProv
-    RouterProv --> SwitchAruba
-    SwitchAruba --> AP1
-    SwitchAruba --> AP2
-    SwitchAruba --> AP3
-    RouterProv --> Internet
-    
-    style RouterEmp fill:#90EE90
-    style SwitchTP fill:#90EE90
-    style RouterProv fill:#FFB6C1
-    style SwitchAruba fill:#FFB6C1
-    style AP1 fill:#FFB6C1
-    style AP2 fill:#FFB6C1
-    style AP3 fill:#FFB6C1
-    style Equipo1 fill:#87CEEB
-    style Equipo2 fill:#87CEEB
-    style Equipo3 fill:#87CEEB
-```
-
-**Leyenda:**
-- 🟢 Verde: Equipos de la Empresa
-- 🔴 Rosa: Equipos del Proveedor
-- 🔵 Azul: Equipos de Usuario
-
-**Descripción:**
-- La empresa posee su propio **Router** y un **Switch TP-Link**
-- El Router de la empresa se conecta al **Router del Proveedor** para obtener acceso a Internet
-- El **Switch Aruba** y los **APs** siguen siendo del proveedor
-- Esta configuración permite a la empresa tener mayor control sobre su red interna antes de salir a Internet
-
----
-
-## Comparación de Topologías
-
-| Aspecto | Topología 1 | Topología 2 |
-|---------|-------------|-------------|
-| Router Empresa | ❌ No | ✅ Sí |
-| Control de Red | Limitado | Mayor control |
-| Gestión de Tráfico | Depende del proveedor | Control interno |
-| Costo | Menor | Mayor (router propio) |
-| Seguridad | Básica | Mejor (firewall propio) |
-
+    %% Conexiones Finales (Opcional, para cerrar el flujo Admin)
+    Q --> Z[Fin de Tarea]
+    O --> Z
