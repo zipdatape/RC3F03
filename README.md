@@ -189,11 +189,11 @@ graph TD
 **Usuarios con shell activo:**
 - `root` (UID 0) - Comprometido
 - `ubuntu` (UID 1000) - No comprometido
-- `gamutvisual` (UID 1001) - No comprometido
+- `gv` (UID 1001) - No comprometido
 
 **Últimos logins:**
 - `ubuntu`: 12 de octubre de 2025, desde 38.25.19.24
-- `gamutvisual`: 28 de octubre de 2025, desde 84.20.19.104
+- `gv`: 28 de octubre de 2025, desde 84.20.19.104
 - `root`: 6 de diciembre de 2025, desde 38.253.159.24 (sesión actual)
 
 ### Configuración SSH
@@ -277,7 +277,7 @@ rm -f /usr/bin/.kworker
 ```bash
 # Eliminadas todas las entradas maliciosas
 # Mantenida solo la entrada legítima:
-# 0 12 * * * /usr/bin/certbot renew --quiet && docker restart gamutvisual-nginx
+# 0 12 * * * /usr/bin/certbot renew --quiet && docker restart gv-nginx
 ```
 
 ### 5. Limpieza de Archivos de Shell
