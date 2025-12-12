@@ -1,0 +1,324 @@
+# Control de Reinicios de Windows Update - Análisis y Solución
+
+**Fecha:** 12 de diciembre de 2025  
+**Equipo:** HPERLAPPORTUGUE
+
+---
+
+## 🔍 DIAGNÓSTICO: ¿De qué política GPO viene el reinicio?
+
+### ⚠️ POLÍTICA GPO IDENTIFICADA
+
+**Nombre de la Política:** `__WSUS`  
+**GUID:** `673de858-cf21-426d-80f1-8b74c3801949`  
+**Última modificación:** 10 de octubre de 2025, 13:05:10  
+**Estado:** Habilitada (AllSettingsEnabled)  
+**Dominio:** ADPER.HITSS.MX
+
+### Configuración Actual Detectada
+
+Basado en el análisis del registro y políticas de grupo, tu equipo tiene las siguientes políticas aplicadas:
+
+#### Políticas de Windows Update (GPO)
+**Ruta del registro:** `HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU`  
+**Política aplicada:** `__WSUS`
+
+| Parámetro | Valor Actual | Significado | Política |
+|-----------|--------------|-------------|----------|
+| **AUOptions** | `7` | **Descargar e instalar automáticamente, luego reiniciar automáticamente** | **__WSUS** |
+| **ScheduledInstallDay** | `7` | Todos los días | **__WSUS** |
+| **ScheduledInstallTime** | `3` | **3:00 AM** (hora de instalación) | **__WSUS** |
+| **RebootRelaunchTimeout** | `10` | 10 minutos de espera antes de reiniciar | **__WSUS** |
+| **UseWUServer** | `1` | Usa servidor WSUS: `wsus.adper.hitss.mx:8530` | **__WSUS** |
+| **AutoInstallMinorUpdates** | `1` | Instalar actualizaciones menores automáticamente | **__WSUS** |
+| **NoAutoUpdate** | `0` | Actualizaciones automáticas habilitadas | **__WSUS** |
+
+### Política GPO Aplicada
+
+La política que está causando los reinicios automáticos es:
+
+**Nombre:** `__WSUS`  
+**Ruta en GPO:**  
+`Computer Configuration > Administrative Templates > Windows Components > Windows Update > Configure Automatic Updates`
+
+**Configuración actual:**
+- **Estado:** Habilitado
+- **Opciones:** `7` = "Auto download, schedule install, and auto restart"
+- **Horario programado:** Todos los días a las 3:00 AM
+- **Servidor WSUS:** `wsus.adper.hitss.mx:8530`
+
+**Para modificar esta política:**
+1. Abrir **Administración de directivas de grupo** (gpmc.msc)
+2. Buscar la política: **`__WSUS`**
+3. Navegar a: `Computer Configuration > Administrative Templates > Windows Components > Windows Update`
+4. Modificar: **"Configure Automatic Updates"**
+
+---
+
+## ⚙️ CÓMO CONTROLAR EL HORARIO DE REINICIO
+
+### Opción 1: Modificar la Política de Grupo (Recomendado para dominio)
+
+Si tienes acceso al servidor de políticas de grupo:
+
+#### Paso 1: Abrir Editor de Políticas de Grupo
+1. Abre **Administración de directivas de grupo** (gpmc.msc)
+2. **Buscar la política:** `__WSUS` (GUID: 673de858-cf21-426d-80f1-8b74c3801949)
+3. Navega a: `Computer Configuration > Administrative Templates > Windows Components > Windows Update`
+
+#### Paso 2: Configurar "Configure Automatic Updates"
+1. Haz doble clic en **"Configure Automatic Updates"**
+2. Selecciona **"Enabled"**
+3. En **"Configure automatic updating"**, selecciona una de estas opciones:
+
+   | Opción | Descripción |
+   |--------|-------------|
+   | **2** | Notificar antes de descargar |
+   | **3** | Descargar automáticamente y notificar antes de instalar |
+   | **4** | **Descargar automáticamente e instalar en horario programado** (recomendado) |
+   | **5** | Permitir al administrador local elegir |
+
+4. Si eliges la opción **4**, configura:
+   - **Scheduled install day:** 
+     - `0` = Todos los días
+     - `1-7` = Domingo a Sábado
+     - `8` = Solo los días laborables
+   - **Scheduled install time:** 
+     - `0-23` = Hora en formato 24 horas (ej: `22` = 10:00 PM)
+
+#### Paso 3: Configurar "No auto-restart with logged on users"
+1. Busca: **"No auto-restart for logged-on users"**
+2. Selecciona **"Enabled"** para evitar reinicios cuando hay usuarios conectados
+
+#### Paso 4: Configurar "Turn off auto-restart for updates during active hours"
+1. Busca: **"Turn off auto-restart for updates during active hours"**
+2. Selecciona **"Enabled"**
+3. Configura las horas activas (ej: 8:00 AM - 6:00 PM)
+
+### Opción 2: Modificar Registro Localmente (Solo para este equipo)
+
+Si no tienes acceso a GPO o quieres una solución temporal:
+
+#### Script PowerShell para Cambiar Horario
+
+```powershell
+# Script: Cambiar-HorarioReinicioWindowsUpdate.ps1
+# Ejecutar como Administrador
+
+param(
+    [Parameter(Mandatory=$false)]
+    [int]$HoraInstalacion = 22,  # 10:00 PM por defecto
+    
+    [Parameter(Mandatory=$false)]
+    [int]$DiaInstalacion = 0,     # 0 = Todos los días, 1-7 = Domingo-Sábado
+    
+    [Parameter(Mandatory=$false)]
+    [int]$MinutosEsperaReinicio = 30  # 30 minutos antes de reiniciar
+)
+
+Write-Host "=== CONFIGURANDO HORARIO DE REINICIO DE WINDOWS UPDATE ===" -ForegroundColor Cyan
+
+# Verificar permisos de administrador
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $isAdmin) {
+    Write-Error "Este script requiere permisos de administrador"
+    exit 1
+}
+
+# Ruta del registro
+$auPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU"
+
+# Verificar si existe la ruta
+if (!(Test-Path $auPath)) {
+    Write-Host "Creando ruta de registro..." -ForegroundColor Yellow
+    New-Item -Path $auPath -Force | Out-Null
+}
+
+# Validar hora (0-23)
+if ($HoraInstalacion -lt 0 -or $HoraInstalacion -gt 23) {
+    Write-Error "La hora debe estar entre 0 y 23"
+    exit 1
+}
+
+# Validar día (0-8)
+if ($DiaInstalacion -lt 0 -or $DiaInstalacion -gt 8) {
+    Write-Error "El día debe estar entre 0 (todos) y 8 (laborables)"
+    exit 1
+}
+
+try {
+    # Cambiar horario de instalación
+    Write-Host "Configurando horario de instalación: $HoraInstalacion:00" -ForegroundColor Yellow
+    Set-ItemProperty -Path $auPath -Name "ScheduledInstallTime" -Value $HoraInstalacion -Type DWord -ErrorAction Stop
+    
+    # Cambiar día de instalación
+    $diaTexto = switch ($DiaInstalacion) {
+        0 { "Todos los días" }
+        1 { "Domingo" }
+        2 { "Lunes" }
+        3 { "Martes" }
+        4 { "Miércoles" }
+        5 { "Jueves" }
+        6 { "Viernes" }
+        7 { "Sábado" }
+        8 { "Días laborables" }
+    }
+    Write-Host "Configurando día de instalación: $diaTexto" -ForegroundColor Yellow
+    Set-ItemProperty -Path $auPath -Name "ScheduledInstallDay" -Value $DiaInstalacion -Type DWord -ErrorAction Stop
+    
+    # Cambiar tiempo de espera antes de reiniciar (en minutos)
+    Write-Host "Configurando tiempo de espera antes de reiniciar: $MinutosEsperaReinicio minutos" -ForegroundColor Yellow
+    Set-ItemProperty -Path $auPath -Name "RebootRelaunchTimeout" -Value $MinutosEsperaReinicio -Type DWord -ErrorAction Stop
+    Set-ItemProperty -Path $auPath -Name "RebootRelaunchTimeoutEnabled" -Value 1 -Type DWord -ErrorAction Stop
+    
+    # Cambiar AUOptions a 4 (instalar en horario programado, no reiniciar inmediatamente)
+    Write-Host "Cambiando modo de actualización a 'Instalar en horario programado'" -ForegroundColor Yellow
+    Set-ItemProperty -Path $auPath -Name "AUOptions" -Value 4 -Type DWord -ErrorAction Stop
+    
+    Write-Host "`nConfiguración aplicada exitosamente!" -ForegroundColor Green
+    Write-Host "Horario de instalación: $HoraInstalacion:00" -ForegroundColor Green
+    Write-Host "Día: $diaTexto" -ForegroundColor Green
+    Write-Host "Tiempo de espera antes de reiniciar: $MinutosEsperaReinicio minutos" -ForegroundColor Green
+    
+    # Reiniciar servicio Windows Update
+    Write-Host "`nReiniciando servicio Windows Update..." -ForegroundColor Yellow
+    Restart-Service wuauserv -Force
+    
+    Write-Host "`n¡Configuración completada!" -ForegroundColor Green
+    
+} catch {
+    Write-Error "Error al aplicar configuración: $($_.Exception.Message)"
+    exit 1
+}
+```
+
+#### Uso del Script
+
+```powershell
+# Ejecutar como Administrador
+
+# Cambiar a 10:00 PM todos los días
+.\Cambiar-HorarioReinicioWindowsUpdate.ps1 -HoraInstalacion 22
+
+# Cambiar a 11:00 PM solo los sábados
+.\Cambiar-HorarioReinicioWindowsUpdate.ps1 -HoraInstalacion 23 -DiaInstalacion 7
+
+# Cambiar a 2:00 AM días laborables con 60 minutos de espera
+.\Cambiar-HorarioReinicioWindowsUpdate.ps1 -HoraInstalacion 2 -DiaInstalacion 8 -MinutosEsperaReinicio 60
+```
+
+### Opción 3: Configurar Horarios Activos
+
+Los horarios activos evitan que Windows reinicie durante las horas que especifiques:
+
+```powershell
+# Configurar horarios activos (8:00 AM - 6:00 PM)
+$uxPath = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings"
+
+if (!(Test-Path $uxPath)) {
+    New-Item -Path $uxPath -Force | Out-Null
+}
+
+# Horario activo: 8:00 AM (8) a 6:00 PM (18)
+Set-ItemProperty -Path $uxPath -Name "ActiveHoursStart" -Value 8 -Type DWord
+Set-ItemProperty -Path $uxPath -Name "ActiveHoursEnd" -Value 18 -Type DWord
+Set-ItemProperty -Path $uxPath -Name "IsActiveHoursEnabled" -Value 1 -Type DWord
+Set-ItemProperty -Path $uxPath -Name "ActiveHoursMaxRange" -Value 12 -Type DWord
+```
+
+---
+
+## 📋 VALORES DE CONFIGURACIÓN
+
+### AUOptions (Modo de Actualización)
+
+| Valor | Descripción |
+|-------|-------------|
+| 2 | Notificar antes de descargar |
+| 3 | Descargar automáticamente y notificar antes de instalar |
+| 4 | **Descargar automáticamente e instalar en horario programado** ⭐ Recomendado |
+| 5 | Permitir al administrador local elegir |
+| 7 | Descargar e instalar automáticamente, luego reiniciar automáticamente (actual) |
+
+### ScheduledInstallDay (Día de Instalación)
+
+| Valor | Día |
+|-------|-----|
+| 0 | Todos los días |
+| 1 | Domingo |
+| 2 | Lunes |
+| 3 | Martes |
+| 4 | Miércoles |
+| 5 | Jueves |
+| 6 | Viernes |
+| 7 | Sábado |
+| 8 | Solo días laborables |
+
+### ScheduledInstallTime (Hora de Instalación)
+
+| Valor | Hora |
+|-------|------|
+| 0-23 | Hora en formato 24 horas (0 = medianoche, 23 = 11 PM) |
+
+---
+
+## 🔧 VERIFICAR CONFIGURACIÓN ACTUAL
+
+```powershell
+# Ver configuración actual
+$au = Get-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -ErrorAction SilentlyContinue
+
+if ($au) {
+    Write-Host "=== CONFIGURACIÓN ACTUAL ===" -ForegroundColor Cyan
+    Write-Host "AUOptions: $($au.AUOptions)"
+    Write-Host "ScheduledInstallDay: $($au.ScheduledInstallDay)"
+    Write-Host "ScheduledInstallTime: $($au.ScheduledInstallTime):00"
+    Write-Host "RebootRelaunchTimeout: $($au.RebootRelaunchTimeout) minutos"
+    Write-Host "UseWUServer: $($au.UseWUServer)"
+} else {
+    Write-Host "No hay políticas de GPO aplicadas" -ForegroundColor Yellow
+}
+```
+
+---
+
+## ⚠️ IMPORTANTE
+
+1. **Si modificas el registro localmente:**
+   - Los cambios pueden ser sobrescritos por GPO en el próximo refresh
+   - Ejecuta `gpupdate /force` después de modificar GPO
+   - Reinicia el servicio: `Restart-Service wuauserv -Force`
+
+2. **Para cambios permanentes:**
+   - Modifica la política de grupo en el servidor
+   - Los cambios se aplicarán a todos los equipos del dominio/OU
+
+3. **Recomendaciones de horario:**
+   - Horas de menor uso: 10:00 PM - 2:00 AM
+   - Días: Sábados o domingos para actualizaciones grandes
+   - Configurar horarios activos para evitar interrupciones
+
+---
+
+## 📝 RESUMEN DE LA SOLUCIÓN
+
+**Problema actual:**
+- Reinicios automáticos a las 3:00 AM todos los días
+- Causado por `AUOptions = 7` (reinicio automático inmediato)
+
+**Solución recomendada:**
+1. Cambiar `AUOptions` de `7` a `4` (instalar en horario programado)
+2. Cambiar `ScheduledInstallTime` a una hora más conveniente (ej: 22 = 10:00 PM)
+3. Configurar horarios activos (8:00 AM - 6:00 PM)
+4. Aumentar `RebootRelaunchTimeout` a 30-60 minutos
+
+**Próximos pasos:**
+1. Identificar la política GPO en el servidor
+2. Modificar la política o aplicar cambios locales
+3. Verificar que los cambios se aplicaron correctamente
+4. Monitorear los próximos reinicios
+
+---
+
+**Generado:** 12 de diciembre de 2025
+
