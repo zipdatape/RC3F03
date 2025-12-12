@@ -1,7 +1,7 @@
 # Control de Reinicios de Windows Update - Análisis y Solución
 
 **Fecha:** 12 de diciembre de 2025  
-**Equipo:** HPERLAPPORTUGUE
+**Equipo:** HPERLAPP
 
 ---
 
